@@ -724,16 +724,16 @@ int getCO2PPM() {
   unsigned long highTime = pulseIn(MHZ19C_PWM_PIN, HIGH, 5000000); // 5s timeout
   unsigned long lowTime = pulseIn(MHZ19C_PWM_PIN, LOW, 5000000);
 
-  if (highTime > 0 && lowTime > 0) {
+  // pulseIn() returns microseconds; datasheet offsets are 2 ms and 4 ms
+  if (highTime >= 2000 && lowTime >= 2000) {
       unsigned long period = highTime + lowTime;
-      co2ppm = 2000.0 * (highTime - 2) / (period - 4); // Update global CO2 reading
+      co2ppm = 2000.0 * (highTime - 2000) / (period - 4000);
 
       Serial.print("CO2 ppm: ");
       Serial.println(co2ppm);
   } else {
-      co2ppm = NAN; // Set to NAN if invalid reading
-      return -1;
       Serial.println("Invalid reading. State: ERROR");
+      return -1;
   }
   if(first_update) awake_until = millis() + awake_duration_left; // Restore awake duration
   return (int)co2ppm;
